@@ -2,7 +2,7 @@
 
 Для установки **Nakushot** в Arch Linux с использованием **PKGBUILD**, выполните следующие шаги:
 
-### Eстановка
+### Установка
    ```bash
    git clone https://github.com/NamakeKuma/nakushot.git
    cd nakushot
