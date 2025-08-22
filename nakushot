@@ -1,0 +1,107 @@
+#!/bin/sh
+
+default_extension="png"
+directory="$HOME/Images/Screenshots/Nakushot"
+# Создаем директорию, если она не существует
+mkdir -p "$directory"
+
+function show_help() {
+    echo "Nakushot - утилита для создания скриншотов в Wayland"
+    echo ""
+    echo "Использование:"
+    echo "  nakushot.sh [ПАРАМЕТР]"
+    echo ""
+    echo "Параметры:"
+    echo "  --help          Показать эту справку"
+    echo "  --area          Сделать снимок выделенной области"
+    echo "  --copy_only     Сделать снимок и скопировать в буфер (без сохранения)"
+    echo "  Без параметров  Открыть интерактивное меню wofi"
+    echo ""
+    echo "Интерактивное меню:"
+    echo "  Полный экран     - Снимок всего экрана с сохранением в файл"
+    echo "  Выделить область - Выбрать область для снимка"
+    echo "  Свое имя         - Снимок с указанием имени файла"
+    echo "  Только копирование - Снимок только в буфер обмена"
+    echo ""
+    echo "Зависимости:"
+    echo "  grim    - захват экрана"
+    echo "  slurp   - выделение области"
+    echo "  wl-copy - копирование в буфер Wayland"
+    echo "  wofi    - диалоговое меню"
+    echo "  notify-send - уведомления"
+}
+
+function copy_only(){
+    name="$(date +"%d-%m-%Y_%H:%M").$default_extension"
+    output="/tmp/$name"
+    
+    grim "$output"
+    wl-copy < "$output"
+
+    notify-send "Nakushot" "Снимок экрана сделан в режиме:\n<b>Только копирование</b>"
+    exit
+}
+
+function area_screenshot() {
+    name="$(date +"%d-%m-%Y_%H:%M").$default_extension"
+    output="$directory/$name"
+    
+    area=$(slurp)
+    if [ -z "$area" ]; then
+        notify-send "Nakushot" "Выделение области отменено"
+        exit
+    fi
+    
+    grim -g "$area" "$output"
+    wl-copy < "$output"
+
+    notify-send "Nakushot" "Снимок области <i>$name</i> сделан и скопирован в буфер обмена"
+    exit
+}
+
+function normalScreenshot() {
+    output="$directory/$name"
+    
+    sleep 0.7
+    grim "$output"
+    wl-copy < "$output"
+
+    notify-send "Nakushot" "Снимок экрана <i>$name</i> сделан и скопирован в буфер обмена"
+}
+
+# Обработка параметров командной строки
+case "$1" in
+    "--help")
+        show_help
+        exit 0
+        ;;
+    "--copy_only")
+        copy_only
+        ;;
+    "--area")
+        area_screenshot
+        ;;
+    "")
+        # Без параметров - показываем меню
+        ;;
+    *)
+        echo "Неизвестный параметр: $1"
+        echo "Используйте --help для просмотра справки"
+        exit 1
+        ;;
+esac
+
+# Если не было параметров или параметр пустой, показываем меню
+if [ $# -eq 0 ] || [ -z "$1" ]; then
+    choice=$(printf "Полный экран\nВыделить область\nСвое имя\nТолько копирование" | wofi --dmenu --prompt "Nakushot")
+
+    case "$choice" in
+        "Полный экран") name="$(date +"%d-%m-%Y_%H:%M").png";;
+        "Выделить область") area_screenshot ;;
+        "Свое имя") name=$(wofi --dmenu --prompt "Имя снимка").$default_extension;;
+        "Только копирование") sleep 0.7 && copy_only ;;
+        *) exit
+    esac
+
+    normalScreenshot
+fi
