@@ -1,4 +1,4 @@
-# Maintainer: NaKu <naku@example.com>
+# Maintainer: NaKu <namakekuma@tuta.io>
 pkgname=nakushot
 pkgver=1.0
 pkgrel=1
