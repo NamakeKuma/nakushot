@@ -1,107 +1,282 @@
-#!/bin/sh
+#!/bin/bash
 
+# Настройки по умолчанию
 default_extension="png"
-directory="$HOME/Images/Screenshots/Nakushot"
-# Создаем директорию, если она не существует
+directory="$HOME/Screenshots/Nakushot"
+notification_timeout=5000  # 5 секунд
+
+# Иконки (Nerd Fonts)
+icon_success=""      # Скриншот
+icon_error=""        # Ошибка
+icon_info=""         # Информация
+icon_clipboard=""    # Буфер обмена
+icon_folder=""       # Папка
+icon_calendar=""     # Календарь
+icon_clock=""        # Часы
+
+# Создаем директорию для скриншотов, если она не существует
 mkdir -p "$directory"
 
+# Функция показа справки
 function show_help() {
-    echo "Nakushot - утилита для создания скриншотов в Wayland"
+    echo -e "\033[1;36m${icon_info} Nakushot - утилита для создания скриншотов в Wayland\033[0m"
     echo ""
-    echo "Использование:"
-    echo "  nakushot.sh [ПАРАМЕТР]"
+    echo -e "\033[1mИспользование:\033[0m"
+    echo "  nakushot [ПАРАМЕТР]"
     echo ""
-    echo "Параметры:"
-    echo "  --help          Показать эту справку"
-    echo "  --area          Сделать снимок выделенной области"
-    echo "  --copy_only     Сделать снимок и скопировать в буфер (без сохранения)"
-    echo "  Без параметров  Открыть интерактивное меню wofi"
+    echo -e "\033[1mПараметры:\033[0m"
+    echo "  -h, --help      Показать эту справку"
+    echo "  -a, --area      Сделать снимок выделенной области"
+    echo "  -c, --copy-only Сделать снимок и скопировать в буфер (без сохранения)"
+    echo "  -f, --full      Снимок всего экрана"
+    echo "  Без параметров  Открыть интерактивное меню"
     echo ""
-    echo "Интерактивное меню:"
-    echo "  Полный экран     - Снимок всего экрана с сохранением в файл"
-    echo "  Выделить область - Выбрать область для снимка"
-    echo "  Свое имя         - Снимок с указанием имени файла"
-    echo "  Только копирование - Снимок только в буфер обмена"
+    echo -e "\033[1mИнтерактивное меню:\033[0m"
+    echo "     Полный экран          - Снимок всего экрана"
+    echo "     Выделить область      - Выбрать область для снимка"
+    echo "     Указать имя файла     - Снимок с указанием имени файла"
+    echo "     Только буфер обмена   - Снимок только в буфер обмена"
     echo ""
-    echo "Зависимости:"
-    echo "  grim    - захват экрана"
-    echo "  slurp   - выделение области"
-    echo "  wl-copy - копирование в буфер Wayland"
-    echo "  wofi    - диалоговое меню"
-    echo "  notify-send - уведомления"
+    echo -e "\033[1mЗависимости:\033[0m"
+    echo "  grim       - захват экрана"
+    echo "  slurp      - выделение области"
+    echo "  wl-copy    - копирование в буфер Wayland"
+    echo "  wofi       - диалоговое меню"
+    echo "  libnotify  - уведомления"
+    echo "  nerd fonts - специальные символы"
+    echo ""
+    echo "Nakushot - переработанная версия grimshot с дополнительными функциями"
 }
 
-function copy_only(){
-    name="$(date +"%d-%m-%Y_%H:%M").$default_extension"
-    output="/tmp/$name"
+# Расширенная функция отправки уведомлений
+function send_notification() {
+    local summary="$1"
+    local body="$2"
+    local urgency="${3:-normal}"
+    local icon="${4:-}"
+    local category="${5:-transfer.complete}"
+    local transient="${6:-false}"
+    local hints="${7:-}"
     
-    grim "$output"
-    wl-copy < "$output"
-
-    notify-send "Nakushot" "Снимок экрана сделан в режиме:\n<b>Только копирование</b>"
-    exit
-}
-
-function area_screenshot() {
-    name="$(date +"%d-%m-%Y_%H:%M").$default_extension"
-    output="$directory/$name"
+    local notify_cmd="notify-send -a 'Nakushot' -u '$urgency' -t '$notification_timeout' -c '$category'"
     
-    area=$(slurp)
-    if [ -z "$area" ]; then
-        notify-send "Nakushot" "Выделение области отменено"
-        exit
+    # Добавляем иконку, если указана
+    if [ -n "$icon" ]; then
+        notify_cmd+=" -i '$icon'"
     fi
     
-    grim -g "$area" "$output"
-    wl-copy < "$output"
-
-    notify-send "Nakushot" "Снимок области <i>$name</i> сделан и скопирован в буфер обмена"
-    exit
+    # Добавляем флаг transient, если нужно
+    if [ "$transient" = true ]; then
+        notify_cmd+=" -e"
+    fi
+    
+    # Добавляем дополнительные hints, если указаны
+    if [ -n "$hints" ]; then
+        notify_cmd+=" $hints"
+    fi
+    
+    # Отправляем уведомление
+    eval "$notify_cmd '$summary' '$body'"
 }
 
-function normalScreenshot() {
-    output="$directory/$name"
+# Функция для отправки уведомления с действиями
+function send_action_notification() {
+    local summary="$1"
+    local body="$2"
+    local actions="${3:-}"
+    local urgency="${4:-normal}"
     
-    sleep 0.7
-    grim "$output"
-    wl-copy < "$output"
+    local notify_cmd="notify-send -a 'Nakushot' -u '$urgency' -t 0 -c 'transfer'"
+    
+    # Добавляем действия, если указаны
+    if [ -n "$actions" ]; then
+        for action in $actions; do
+            notify_cmd+=" -A '$action'"
+        done
+        notify_cmd+=" -w"
+    fi
+    
+    # Отправляем уведомление и возвращаем результат
+    eval "$notify_cmd '$summary' '$body'"
+}
 
-    notify-send "Nakushot" "Снимок экрана <i>$name</i> сделан и скопирован в буфер обмена"
+# Функция для создания скриншота только в буфер обмена
+function copy_only() {
+    local name="$(date +"%d-%m-%Y_%H:%M:%S").$default_extension"
+    local output="/tmp/$name"
+    
+    # Уведомление о начале процесса
+    send_notification "${icon_info} Nakushot" "Создание скриншота..." "low" "camera-timer" "transfer"
+    
+    # Создаем скриншот и копируем в буфер
+    if grim "$output" && wl-copy < "$output"; then
+        send_notification "${icon_success} Скриншот создан" "Снимок экрана скопирован в буфер обмена ${icon_clipboard}" "normal" "camera" "transfer.complete" \
+            "false" "--hint=string:desktop-entry:nakushot --hint=int:transient:1 --hint=string:image-path:file://$output"
+    else
+        send_notification "${icon_error} Ошибка" "Не удалось создать скриншот" "critical" "camera-error" "transfer.error" "true" \
+            "--hint=string:desktop-entry:nakushot --hint=int:transient:1"
+        exit 1
+    fi
+    
+    exit 0
+}
+
+# Функция для создания скриншота области
+function area_screenshot() {
+    local name="$(date +"%d-%m-%Y_%H:%M:%S").$default_extension"
+    local output="$directory/$name"
+    
+    # Убрано уведомление перед выделением области - сразу запускаем slurp
+    
+    # Получаем координаты области через slurp
+    local area=$(slurp -d 2>/dev/null)
+    if [ -z "$area" ]; then
+        send_notification "${icon_error} Отменено" "Выделение области отменено" "low" "dialog-error" "transfer.error" "true"
+        exit 0
+    fi
+    
+    # Создаем скриншот области
+    if grim -g "$area" "$output" && wl-copy < "$output"; then
+        local file_size=$(du -h "$output" | cut -f1)
+        local actions="open=Открыть copy=Копировать путь show=Показать в папке"
+        
+        local result=$(send_action_notification \
+            "${icon_success} Скриншот области сохранён" \
+            "Файл: $(basename "$output")\nРазмер: $file_size\nПуть: $directory" \
+            "$actions" \
+            "normal")
+        
+        # Обрабатываем действия пользователя
+        case "$result" in
+            "open")
+                xdg-open "$output" 2>/dev/null &
+                ;;
+            "copy")
+                echo "$output" | wl-copy
+                send_notification "Путь скопирован" "Путь к файлу скопирован в буфер" "low" "edit-copy" "transfer.complete" "true"
+                ;;
+            "show")
+                xdg-open "$directory" 2>/dev/null &
+                ;;
+        esac
+        
+    else
+        send_notification "${icon_error} Ошибка" "Не удалось создать скриншот области" "critical" "camera-error" "transfer.error" "true"
+        exit 1
+    fi
+    
+    exit 0
+}
+
+# Функция для создания скриншота всего экрана
+function full_screenshot() {
+    local name="$(date +"%d-%m-%Y_%H:%M:%S").$default_extension"
+    local output="$directory/$name"
+    
+    # Уведомление о начале процесса
+    send_notification "${icon_info} Создание скриншота" "Захват всего экрана..." "low" "camera-timer" "transfer" "true"
+    
+    # Создаем скриншот всего экрана
+    if grim "$output" && wl-copy < "$output"; then
+        local file_size=$(du -h "$output" | cut -f1)
+        local timestamp=$(date +"%d.%m.%Y %H:%M:%S")
+        
+        send_notification \
+            "${icon_success} Скриншот экрана сохранён" \
+            "Файл: $(basename "$output")\nРазмер: $file_size\nВремя: $timestamp" \
+            "normal" \
+            "camera" \
+            "transfer.complete" \
+            "false" \
+            "--hint=string:desktop-entry:nakushot --hint=string:image-path:file://$output --hint=int:transient:0"
+        
+    else
+        send_notification "${icon_error} Ошибка" "Не удалось создать скриншот" "critical" "camera-error" "transfer.error" "true"
+        exit 1
+    fi
+    
+    echo "$output"
+    exit 0
+}
+
+# Функция для обычного скриншота с указанным именем
+function normal_screenshot() {
+    local output="$directory/$name"
+    
+    # Небольшая задержка для возможности переключения окон
+    sleep 0.3
+    
+    if grim "$output" && wl-copy < "$output"; then
+        local file_size=$(du -h "$output" | cut -f1)
+        
+        send_notification \
+            "${icon_success} Скриншот сохранён" \
+            "Файл: $name\nРазмер: $file_size\nПапка: $directory" \
+            "normal" \
+            "camera" \
+            "transfer.complete" \
+            "false" \
+            "--hint=string:desktop-entry:nakushot --hint=string:image-path:file://$output"
+        
+    else
+        send_notification "${icon_error} Ошибка" "Не удалось создать скриншот" "critical" "camera-error" "transfer.error" "true"
+        exit 1
+    fi
 }
 
 # Обработка параметров командной строки
-case "$1" in
-    "--help")
+case "${1:-}" in
+    "--help"|"-h")
         show_help
         exit 0
         ;;
-    "--copy_only")
+    "--copy-only"|"-c")
         copy_only
         ;;
-    "--area")
+    "--area"|"-a")
         area_screenshot
         ;;
+    "--full"|"-f")
+        full_screenshot
+        ;;
     "")
-        # Без параметров - показываем меню
+        # Без параметров - продолжаем к интерактивному меню
         ;;
     *)
-        echo "Неизвестный параметр: $1"
+        send_notification "${icon_error} Неизвестный параметр" "Используйте: nakushot --help" "critical" "dialog-error" "transfer.error" "true"
+        echo -e "${icon_error} Неизвестный параметр: $1"
         echo "Используйте --help для просмотра справки"
         exit 1
         ;;
 esac
 
-# Если не было параметров или параметр пустой, показываем меню
-if [ $# -eq 0 ] || [ -z "$1" ]; then
-    choice=$(printf "Полный экран\nВыделить область\nСвое имя\nТолько копирование" | wofi --dmenu --prompt "Nakushot")
+# Интерактивное меню (если не указаны параметры)
+if [ $# -eq 0 ]; then
+    choice=$(printf "   Полный экран\n   Выделить область\n   Указать имя файла\n   Только буфер обмена" | wofi --dmenu --prompt "Nakushot" --width 300 --height 160)
 
     case "$choice" in
-        "Полный экран") name="$(date +"%d-%m-%Y_%H:%M").png";;
-        "Выделить область") area_screenshot ;;
-        "Свое имя") name=$(wofi --dmenu --prompt "Имя снимка").$default_extension;;
-        "Только копирование") sleep 0.7 && copy_only ;;
-        *) exit
+        "   Полный экран") 
+            name="$(date +"%d-%m-%Y_%H:%M:%S").png"
+            normal_screenshot
+            ;;
+        "   Выделить область") 
+            area_screenshot 
+            ;;
+        "   Указать имя файла") 
+            name=$(wofi --dmenu --prompt "  Имя снимка").$default_extension
+            if [ -n "$name" ]; then
+                normal_screenshot
+            else
+                send_notification "${icon_error} Ошибка" "Имя файла не указано" "normal" "dialog-error" "transfer.error" "true"
+            fi
+            ;;
+        "   Только буфер обмена") 
+            sleep 0.3
+            copy_only 
+            ;;
+        *) 
+            # Выход при отмене выбора
+            exit 0
+            ;;
     esac
-
-    normalScreenshot
 fi
