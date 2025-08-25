@@ -3,7 +3,7 @@
 # Скрипт установки nakushot
 # Форк grimshot с дополнительными функциями
 
-NAKUSHOT_SCRIPT='#!/bin/bash
+NAKUSHOT_SCRIPT='#!/bin/bash'
 
 # nakushot - утилита для создания скриншотов в Wayland
 # Форк grimshot с дополнительными функциями
@@ -148,7 +148,7 @@ case "$1" in
         exit 1
         ;;
 esac
-'
+
 
 # Проверка прав суперпользователя
 if [ "$EUID" -ne 0 ]; then
