@@ -6,7 +6,7 @@ pkgdesc="Утилита для создания скриншотов в Wayland 
 arch=('any')
 url="https://github.com/NaKu/nakushot"
 license=('MIT')
-depends=('grim' 'slurp' 'wl-clipboard' 'wofi' 'libnotify')
+depends=('grim' 'slurp' 'wl-clipboard' 'wofi' 'libnotify' 'ttf-nerd-fonts-symbols' 'ttf-nerd-fonts-symbols-common' 'ttf-nerd-fonts-symbols-mono')
 source=("nakushot")
 sha256sums=('SKIP')
 
