@@ -17,7 +17,9 @@
 
 ```bash
 # Скачайте и запустите установочный скрипт
-curl -O https://raw.githubusercontent.com/NamakeKuma/nakushot/main/install.sh
+git clone https://github.com/NamakeKuma/nakushot.git
+cd nakushot
+
 chmod +x install.sh
 sudo ./install.sh
 ```
