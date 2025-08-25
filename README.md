@@ -63,7 +63,7 @@ nakushot  # Запуск без параметров открывает меню
 | `wl-copy` | Копирование в буфер | `sudo pacman -S wl-clipboards` |
 | `wofi` | Диалоговое меню | `sudo pacman -S wofi` |
 | `libnotify` | Уведомления | `sudo pacman -S libnotify` |
-| `nerd-fonts` | Специальные символы | `yay -S nerd-fonts-complete` |
+| `nerd-fonts` | Специальные символы | `sudo pacman -S ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common ttf-nerd-fonts-symbols-mono` |
 
 ## ⚙️ Настройка
 
