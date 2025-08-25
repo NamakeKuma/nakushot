@@ -44,8 +44,6 @@ function show_help() {
     echo "  wofi       - диалоговое меню"
     echo "  libnotify  - уведомления"
     echo "  nerd fonts - специальные символы"
-    echo ""
-    echo "Nakushot - переработанная версия grimshot с дополнительными функциями"
 }
 
 # Расширенная функция отправки уведомлений
