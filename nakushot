@@ -3,6 +3,7 @@
 # Настройки по умолчанию
 default_extension="png"
 directory="$HOME/Screenshots/Nakushot"
+name="$(date +"%d-%m-%Y_%H:%M:%S").$default_extension"
 notification_timeout=5000  # 5 секунд
 
 # Иконки (Nerd Fonts)
@@ -100,14 +101,13 @@ function send_action_notification() {
 
 # Функция для создания скриншота только в буфер обмена
 function copy_only() {
-    local name="$(date +"%d-%m-%Y_%H:%M:%S").$default_extension"
     local output="/tmp/$name"
     
     # Уведомление о начале процесса
     send_notification "${icon_info} Nakushot" "Создание скриншота..." "low" "camera-timer" "transfer"
     
     # Создаем скриншот и копируем в буфер
-    if grim "$output" && wl-copy < "$output"; then
+    if grim "$output" && wl-copy --type "image/$default_extension" < "$output"; then
         send_notification "${icon_success} Скриншот создан" "Снимок экрана скопирован в буфер обмена ${icon_clipboard}" "normal" "camera" "transfer.complete" \
             "false" "--hint=string:desktop-entry:nakushot --hint=int:transient:1 --hint=string:image-path:file://$output"
     else
@@ -121,7 +121,6 @@ function copy_only() {
 
 # Функция для создания скриншота области
 function area_screenshot() {
-    local name="$(date +"%d-%m-%Y_%H:%M:%S").$default_extension"
     local output="$directory/$name"
     
     # Убрано уведомление перед выделением области - сразу запускаем slurp
@@ -134,7 +133,7 @@ function area_screenshot() {
     fi
     
     # Создаем скриншот области
-    if grim -g "$area" "$output" && wl-copy < "$output"; then
+    if grim -g "$area" "$output" && wl-copy --type "image/$default_extension" < "$output"; then
         local file_size=$(du -h "$output" | cut -f1)
         local actions="open=Открыть copy=Копировать путь show=Показать в папке"
         
@@ -168,14 +167,13 @@ function area_screenshot() {
 
 # Функция для создания скриншота всего экрана
 function full_screenshot() {
-    local name="$(date +"%d-%m-%Y_%H:%M:%S").$default_extension"
     local output="$directory/$name"
     
     # Уведомление о начале процесса
     send_notification "${icon_info} Создание скриншота" "Захват всего экрана..." "low" "camera-timer" "transfer" "true"
     
     # Создаем скриншот всего экрана
-    if grim "$output" && wl-copy < "$output"; then
+    if grim "$output" && wl-copy --type "image/$default_extension" < "$output"; then
         local file_size=$(du -h "$output" | cut -f1)
         local timestamp=$(date +"%d.%m.%Y %H:%M:%S")
         
@@ -204,7 +202,7 @@ function normal_screenshot() {
     # Небольшая задержка для возможности переключения окон
     sleep 0.3
     
-    if grim "$output" && wl-copy < "$output"; then
+    if grim "$output" && wl-copy --type "image/$default_extension" < "$output"; then
         local file_size=$(du -h "$output" | cut -f1)
         
         send_notification \
