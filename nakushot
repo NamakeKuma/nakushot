@@ -85,7 +85,7 @@ function send_action_notification() {
     local actions="${3:-}"
     local urgency="${4:-normal}"
     
-    local notify_cmd="notify-send -a 'Nakushot' -u '$urgency' -t 0 -c 'transfer'"
+    local notify_cmd="notify-send -a 'Nakushot' -u '$urgency' -t '$notification_timeout' -c 'transfer'"
     
     # Добавляем действия, если указаны
     if [ -n "$actions" ]; then
