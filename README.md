@@ -62,7 +62,7 @@ nakushot  # Запуск без параметров открывает меню
 |-------|------------|-----------|
 | `grim` | Захват экрана | `sudo pacman -S grim` |
 | `slurp` | Выделение области | `sudo pacman -S slurp` |
-| `wl-copy` | Копирование в буфер | `sudo pacman -S wl-clipboards` |
+| `wl-copy` | Копирование в буфер | `sudo pacman -S wl-clipboard` |
 | `wofi` | Диалоговое меню | `sudo pacman -S wofi` |
 | `libnotify` | Уведомления | `sudo pacman -S libnotify` |
 | `nerd-fonts` | Специальные символы | `sudo pacman -S ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common ttf-nerd-fonts-symbols-mono` |
