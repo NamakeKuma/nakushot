@@ -62,20 +62,12 @@ nakushot  # Запуск без параметров открывает меню
 |-------|------------|-----------|
 | `grim` | Захват экрана | `sudo pacman -S grim` |
 | `slurp` | Выделение области | `sudo pacman -S slurp` |
-| `wl-copy` | Копирование в буфер | `sudo pacman -S wl-clipboard` |
+| `wl-clipboard` | Копирование в буфер | `sudo pacman -S wl-clipboard` |
 | `wofi` | Диалоговое меню | `sudo pacman -S wofi` |
 | `libnotify` | Уведомления | `sudo pacman -S libnotify` |
 | `nerd-fonts` | Специальные символы | `sudo pacman -S ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common ttf-nerd-fonts-symbols-mono` |
 
 ## ⚙️ Настройка
-
-### Переменные окружения
-```bash
-# Изменить папку для сохранения скриншотов
-export SCREENSHOT_DIR="$HOME/Downloads/Screenshots"
-
-# Добавить в ~/.bashrc или ~/.zshrc для постоянного изменения
-```
 
 ## 🔄 Обновление
 
