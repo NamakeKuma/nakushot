@@ -1,6 +1,6 @@
 # Maintainer: NaKu <namakekuma@tuta.io>
 pkgname=nakushot
-pkgver=1.0
+pkgver=1.1
 pkgrel=1
 pkgdesc="Утилита для создания скриншотов в Wayland с поддержкой wofi"
 arch=('any')
