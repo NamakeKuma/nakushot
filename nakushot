@@ -80,8 +80,6 @@ area_screenshot() {
 full_screenshot() {
     local output="$SCREENSHOT_DIR/$FILENAME"
     
-    send_notification "${ICON_INFO} Создание скриншота" "Захват всего экрана..." "low" "camera-timer"
-    
     if grim "$output" && wl-copy --type "image/$DEFAULT_EXTENSION" < "$output"; then
         local file_size
         file_size=$(du -h "$output" | cut -f1)
